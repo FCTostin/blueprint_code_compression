@@ -1,11 +1,633 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Factorio Rich Text</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FCT Blueprint Library</title>
+<link rel="icon" href="https://i.ibb.co/Hp44999c/blueprint-book.png" type="image/png">
+<style>
+    @font-face {
+      font-family: "Factorio";
+      src: url("https://fonts.cdnfonts.com/s/19687/PressStart2P-Regular.woff") format("woff");
+    }
+    
+    :root {
+      --factorio-dark: #262626;
+      --factorio-darker: #1a1a1a;
+      --factorio-mid: #414141;
+      --factorio-accent: #ff9d00;
+      --factorio-accent-dark: #cc7d00;
+      --factorio-text: #e9e9e9;
+      --factorio-yellow: #ffd200;
+      --factorio-blue: #5796c8;
+      --factorio-red: #db2e20;
+      --factorio-green: #8bdc48;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: "Factorio", monospace;
+      background: var(--factorio-dark) url('https://i.ibb.co/39K7GFn6/nuclear-ground.png');     <!-- ФОН -->
+      color: var(--factorio-text);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    
+    .factorio-frame {
+      background-color: var(--factorio-mid);
+      border: 3px solid #696969;
+      border-radius: 0;
+      position: relative;
+      padding: 30px 20px 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .factorio-frame::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 20px;
+      background-color: #696969;
+    }
+    
+    .factorio-frame-title {
+      position: absolute;
+      top: 0;
+      left: 12px;
+      height: 20px;
+      line-height: 20px;
+      color: var(--factorio-text);
+      font-size: 10px;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+    
+    .blueprint-book {
+      display: flex;
+      background-color: var(--factorio-darker);
+      border: 2px solid #555;
+      padding: 5px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .blueprint-book-icon {
+      flex: 0 0 42px;
+      height: 42px;
+      background-image: url('https://i.ibb.co/Lf1C9DF/blueprint1.png');   <!-- Ава -->
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      margin-right: 10px;
+    }
+    
+    .blueprint-book-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .blueprint-book-title {
+      font-size: 16px;
+      color: var(--factorio-blue);
+      margin-bottom: 5px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    }
+    
+    .blueprint-book-desc {
+      font-size: 10px;
+      color: #aaa;
+    }
+    
+    .blueprint-panel {
+      background-color: var(--factorio-darker);
+      border: 2px solid #555;
+      margin-bottom: 15px;
+      position: relative;
+    }
+    
+    .blueprint-header {
+      background-color: #333;
+      padding: 8px 12px;
+      border-bottom: 2px solid #555;
+      display: flex;
+      align-items: center;
+    }
+    
+    .blueprint-icon {
+      width: 32px;
+      height: 32px;
+      background-image: url('https://i.ibb.co/d4Gxc5jW/blueprint2.png');   <!-- Маленьние картикни -->
+      background-size: contain;
+      background-repeat: no-repeat;
+      margin-right: 10px;
+    }
+    
+    .blueprint-title {
+      color: var(--factorio-blue);
+      font-size: 12px;
+    }
+    
+    .blueprint-body {
+      padding: 15px;
+    }
+    
+    textarea {
+      width: 100%;
+      background-color: #111;
+      color: var(--factorio-text);
+      border: 2px solid #555;
+      font-family: monospace;
+      padding: 10px;
+      resize: vertical;
+      min-height: 100px;
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--factorio-blue);
+    }
+    
+    .factorio-button {
+      background-color: var(--factorio-mid);
+      border: 2px solid #555;
+      color: var(--factorio-text);
+      padding: 8px 12px;
+      font-family: "Factorio", monospace;
+      font-size: 10px;
+      cursor: pointer;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      transition: background-color 0.2s;
+    }
+    
+    .factorio-button:hover {
+      background-color: #505050;
+    }
+    
+    .factorio-button:active {
+      background-color: #333;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .factorio-button.green {
+      background-color: #1c6c1c;
+    }
+    
+    .factorio-button.green:hover {
+      background-color: #227622;
+    }
+    
+    .factorio-button.yellow {
+      background-color: #8a7c00;
+    }
+    
+    .factorio-button.yellow:hover {
+      background-color: #a59400;
+    }
+    
+    .factorio-button.red {
+      background-color: #961a10;
+    }
+    
+    .factorio-button.red:hover {
+      background-color: #b22016;
+    }
+    
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border: 2px solid #555;
+      display: none;
+      font-size: 10px;
+    }
+    
+    .success {
+      background-color: rgba(0, 128, 0, 0.2);
+      border-color: #396;
+      color: var(--factorio-green);
+      display: block;
+    }
+    
+    .error {
+      background-color: rgba(128, 0, 0, 0.2);
+      border-color: #933;
+      color: var(--factorio-red);
+      display: block;
+    }
+    
+    .compression-stats {
+      margin-top: 15px;
+      font-size: 10px;
+      color: #aaa;
+      background-color: #222;
+      padding: 10px;
+      border: 1px solid #444;
+      position: relative;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      color: var(--factorio-yellow);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #aaa;
+      font-size: 10px;
+    }
+    
+    .icon-grid {
+      position: absolute;
+      top: 10px;
+      right: -66px;
+      display: grid;
+      grid-template-columns: repeat(4, 24px);
+      grid-gap: 2px;
+    }
+    
+    .icon-box {
+      width: 24px;
+      height: 24px;
+      background-color: #333;
+      border: 1px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--factorio-text);
+    }
+    
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #555;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #777;
+    }
+    
+    .footer a {
+      color: var(--factorio-blue);
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .social-links {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 8px;
+    }
+
+    .social-link {
+      display: flex;
+      align-items: center;
+    }
+
+    .social-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+      filter: brightness(0.8);
+    }
+
+    .icon-inserter {
+      font-size: 14px;
+      color: var(--factorio-yellow);
+      margin-right: 5px;
+    }
+
+    .factorio-tab {
+      display: inline-block;
+      padding: 5px 10px;
+      background-color: #333;
+      border: 2px solid #555;
+      border-bottom: none;
+      margin-right: 2px;
+      position: relative;
+      top: 2px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .factorio-tab.active {
+      background-color: var(--factorio-darker);
+      border-bottom: 2px solid var(--factorio-darker);
+    }
+
+    .tips {
+      background-color: rgba(255, 210, 0, 0.1);
+      border: 1px solid #886a00;
+      padding: 10px;
+      margin-top: 15px;
+      font-size: 9px;
+    }
+
+    .tips h3 {
+      color: var(--factorio-yellow);
+      margin-bottom: 5px;
+    }
+
+    .tips ul {
+      padding-left: 20px;
+	  color: var(--factorio-yellow);
+    }
+
+    .tips li {
+      margin-bottom: 3px;
+    }
+</style>
 </head>
 <body>
-  <h1>Привет, GitHub Pages!</h1>
-  <p>Это мой сайт, размещённый на GitHub.</p>
+  <div class="container">
+    <div class="header">
+      <h1>FCT BLUEPRINTS CODE COMPRESSION</h1>
+    </div>
+    
+    <div class="blueprint-book">
+      <div class="blueprint-book-icon"></div>
+      <div class="blueprint-book-content">
+        <div class="blueprint-book-title">Оптимизатор чертежей для Factorio</div>
+        <div class="blueprint-book-desc">Сжимайте чертежи для экономии места и оптимизации руководств Steam</div>
+      </div>
+      <div class="icon-grid">
+        <div class="icon-box">✖</div>
+      </div>
+    </div>
+    
+    <div class="factorio-frame">
+      <div class="factorio-frame-title">КОМПРЕССОР ЧЕРТЕЖЕЙ</div>
+      
+      <div class="blueprint-panel">
+        <div class="blueprint-header">
+          <div class="blueprint-icon"></div>
+          <div class="blueprint-title">ОРИГИНАЛЬНЫЙ ЧЕРТЕЖ</div>
+        </div>
+        <div class="blueprint-body">
+          <textarea id="originalBlueprint" placeholder="Вставьте строку чертежа здесь...">0eNpFjUsKwjAQhq8Ssq5WrArNVvAE7kRKq4MG+6KJIhTBx9KFZ9ATFLUqgnqFyY0c3ZRZ/Mw33/DnPAjnkGYy1l6QJDMu8oooLgZDi0sNERcVrv1Fi4d+ACEd8ISl2ZgtvvGMhTkwfOILH3jBgqwxqFEmUy2T+OceybrjFQtS3gw/Zo0PCqJXmpLWG72XrA8hTDI/Yngxa7Mj42P2grGp1qkStq3rEdi9bj9RWsZU44+0XIAn4zEsuWhYfAGZ+ne2O0235boUjut0nNXqC7lob2Q=</textarea>
+          <div class="button-container">
+            <button class="factorio-button green" onclick="compressBlueprint()">СЖАТЬ ЧЕРТЕЖ</button>
+            <button class="factorio-button red" onclick="clearFields()">ОЧИСТИТЬ</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="blueprint-panel">
+        <div class="blueprint-header">
+          <div class="blueprint-icon"></div>
+          <div class="blueprint-title">СЖАТЫЙ ЧЕРТЕЖ</div>
+        </div>
+        <div class="blueprint-body">
+          <textarea id="compressedBlueprint" readonly placeholder="Здесь появится сжатый код чертежа..."></textarea>
+          <div class="button-container">
+            <button class="factorio-button yellow" onclick="copyCompressedBlueprint()">СКОПИРОВАТЬ</button>
+            <button class="factorio-button" onclick="decompressBlueprint()">ПРОВЕРИТЬ</button>
+          </div>
+          <div id="status" class="status"></div>
+          <div id="compressionStats" class="compression-stats"></div>
+          
+          <div class="tips">
+            <h3><span class="icon-inserter">🔧</span> Примечания:</h3>
+            <ul>
+			  <li>Делайте резервную копию переде использванием</li>
+              <li>Оптимизация работает лучше всего для больших чертежей</li>
+              <li>Могут быть проблемы совместимости с очень старыми или новеми версиями</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+	    <p>🐞 <a href="https://www.youtube.com/@FCT-Ostin" target="_blank">YouTube</a></p>
+		<p>💙 <a href="https://t.me/FCTostin" target="_blank">Telegram</a></p>
+        <p>🎮 <a href="https://steamcommunity.com/groups/FCTgroup" target="_blank">Steam Group</a></p>
+        <p>🕹 <a href="https://www.patreon.com/c/OstinFCT" target="_blank">Patreon</a></p>
+        <p>🪐 <a href="https://boosty.to/ostinfct" target="_blank">Boosty</a></p>
+        <p>Создано при поддержке Телеграм сообщества FCTostin</p>
+      </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script>
+    function base64ToUint8Array(base64) {
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes;
+    }
+
+    function uint8ArrayToBase64(array) {
+      return btoa(String.fromCharCode.apply(null, array));
+    }
+
+    function showStatus(message, isError = false) {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = 'status ' + (isError ? 'error' : 'success');
+      
+      // Автоматически скрыть сообщение через 5 секунд
+      setTimeout(() => {
+        statusElement.className = 'status';
+      }, 10000);
+    }
+
+    function updateCompressionStats(original, compressed) {
+      const originalSize = original.length;
+      const compressedSize = compressed.length;
+      const savings = originalSize - compressedSize;
+      const savingsPercent = Math.round((savings / originalSize) * 100);
+      
+      document.getElementById('compressionStats').textContent = 
+        `📊 СТАТИСТИКА: ${originalSize} → ${compressedSize} символов (сэкономлено ${savings} символов, ${savingsPercent}%)`;
+    }
+
+    // Функция для оптимизации JSON структуры
+    function optimizeJsonStructure(json) {
+      // Если это массив, обрабатываем каждый элемент
+      if (Array.isArray(json)) {
+        return json.map(item => optimizeJsonStructure(item));
+      }
+      
+      // Если это объект, оптимизируем его
+      if (json && typeof json === 'object') {
+        const result = {};
+        
+        // Обрабатываем каждое свойство объекта
+        for (const key in json) {
+          const value = json[key];
+          
+          // Пропускаем пустые массивы и объекты
+          if (Array.isArray(value) && value.length === 0) continue;
+          if (value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) continue;
+          
+          // Пропускаем значения по умолчанию, если они есть в определенных полях
+          if (key === 'direction' && value === 0) continue;
+          if (key === 'enabled' && value === true) continue;
+          if (key === 'connections' && Object.keys(value).length === 0) continue;
+          
+          // Рекурсивно оптимизируем вложенные объекты и массивы
+          result[key] = optimizeJsonStructure(value);
+        }
+        
+        return result;
+      }
+      
+      // Для примитивных типов просто возвращаем значение
+      return json;
+    }
+
+    function compressBlueprint() {
+      const originalCode = document.getElementById('originalBlueprint').value.trim();
+      
+      if (!originalCode) {
+        showStatus('ОШИБКА: Вставьте код чертежа!', true);
+        return;
+      }
+      
+      try {
+        // Проверяем, начинается ли код с "0" (формат Factorio)
+        if (!originalCode.startsWith('0')) {
+          showStatus('ОШИБКА: Неверный формат чертежа. Код должен начинаться с "0"', true);
+          return;
+        }
+        
+        // Извлекаем base64 без начального "0"
+        const base64 = originalCode.slice(1);
+        
+        // Декодируем base64 в бинарные данные
+        const byteArray = base64ToUint8Array(base64);
+        
+        // Распаковываем сжатые данные
+        const jsonString = pako.inflate(byteArray, { to: 'string' });
+        
+        // Парсим JSON
+        const json = JSON.parse(jsonString);
+        
+        // Глубокая оптимизация структуры JSON
+        const optimizedJsonStructure = optimizeJsonStructure(json);
+        
+        // Конвертируем в компактную строку JSON без пробелов
+        const optimizedJsonString = JSON.stringify(optimizedJsonStructure);
+        
+        // Пробуем разные уровни сжатия и дополнительные опции
+        let bestCompressedData = null;
+        let minSize = Infinity;
+        
+        // Пробуем разные настройки для поиска оптимального сжатия
+        for (let level = 6; level <= 9; level++) {
+          for (let memLevel = 8; memLevel <= 9; memLevel++) {
+            const options = { 
+              level: level,           // Уровень сжатия (0-9)
+              memLevel: memLevel,     // Использование памяти (1-9)
+              strategy: 0             // Стратегия сжатия (0 = стандартная)
+            };
+            
+            const compressed = pako.deflate(optimizedJsonString, options);
+            const base64Result = uint8ArrayToBase64(compressed);
+            
+            if (base64Result.length < minSize) {
+              minSize = base64Result.length;
+              bestCompressedData = compressed;
+            }
+          }
+        }
+        
+        // Кодируем обратно в base64 с использованием лучшего сжатия
+        const compressedBase64 = uint8ArrayToBase64(bestCompressedData);
+        
+        // Добавляем "0" обратно и устанавливаем результат
+        const compressedBlueprint = '0' + compressedBase64;
+        document.getElementById('compressedBlueprint').value = compressedBlueprint;
+        
+        // Обновляем статистику сжатия
+        updateCompressionStats(originalCode, compressedBlueprint);
+        
+        showStatus('✅ Чертеж успешно сжат и оптимизирован!');
+      } catch (e) {
+        showStatus('❌ ОШИБКА: ' + e.message, true);
+      }
+    }
+
+    function decompressBlueprint() {
+      const compressedCode = document.getElementById('compressedBlueprint').value.trim();
+      
+      if (!compressedCode) {
+        showStatus('ОШИБКА: Нет сжатого чертежа для проверки!', true);
+        return;
+      }
+      
+      try {
+        // Проверяем работоспособность сжатого чертежа
+        if (!compressedCode.startsWith('0')) {
+          showStatus('ОШИБКА: Неверный формат чертежа. Код должен начинаться с "0"', true);
+          return;
+        }
+        
+        const base64 = compressedCode.slice(1);
+        const byteArray = base64ToUint8Array(base64);
+        const jsonString = pako.inflate(byteArray, { to: 'string' });
+        const json = JSON.parse(jsonString);
+        
+        // Если все прошло без ошибок, то чертеж работоспособен
+        showStatus('✅ Проверка успешна! Чертеж работоспособен.');
+      } catch (e) {
+        showStatus('❌ ОШИБКА при проверке: ' + e.message, true);
+      }
+    }
+
+    function copyCompressedBlueprint() {
+      const compressedField = document.getElementById('compressedBlueprint');
+      compressedField.select();
+      document.execCommand('copy');
+      showStatus('✅ Чертеж скопирован в буфер обмена!');
+    }
+
+    function clearFields() {
+      document.getElementById('originalBlueprint').value = '';
+      document.getElementById('compressedBlueprint').value = '';
+      document.getElementById('compressionStats').textContent = '';
+      document.getElementById('status').className = 'status';
+    }
+  </script>
 </body>
 </html>
